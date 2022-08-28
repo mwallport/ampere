@@ -6,6 +6,9 @@
 #include <DS3231.h>
 #include <Wire.h>
 #include <SHTSensor.h>
+#include <DueFlashStorage.h>
+#include <inttypes.h>
+#include <string.h>
 #include "controlProtocol.h"
 #include "polySci.h"
 #include "common.h"
@@ -18,10 +21,10 @@
 
 
 // this is for important, error condition debug output
-#define __DEBUG_VIA_SERIAL__
+//#define __DEBUG_VIA_SERIAL__
 
 // this is for frivilous debug output
-#define __DEBUG2_VIA_SERIAL__
+//#define __DEBUG2_VIA_SERIAL__
 
 //#define __DEBUG_VIA_SERIAL3__
 
@@ -154,10 +157,20 @@ unsigned long  status_interval;
 //#endif
 #define MAX_MSG_DISPLAY_TIME  4000  // 1.5 minimum seconds per message
 
-// move this - and ask Rick what the correct initial settings should be
-// high RTD chiller temperature, if hit this, go to SHUTDOWN state
-// and don't start if RTD chiller temperature is this
+//
+// the ASIC_HIGH alarm, if this temp is hit in the ASIC chiller RTD the system
+// will go to SHUTDOWN
+//
 float ASIC_HIGH   = 28.0;
+typedef struct save_data_s
+{
+  uint8_t   sentinel;
+  float     asic_high;
+} save_data_t;
+
+save_data_t saved_data;
+DueFlashStorage dueFlashStorage;
+#define SENTINEL_VALUE    0x3C
 
 
 //

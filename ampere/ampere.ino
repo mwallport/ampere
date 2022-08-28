@@ -283,6 +283,28 @@ void initSystem(void)
   // set the status_interval
   //
   status_interval = GET_STATUS_INTERVAL;
+
+
+  //
+  // fetch stored ASIC_HIGH
+  //
+  memset(&saved_data, '\0', sizeof(saved_data));
+  byte* p_saved_data  = dueFlashStorage.readAddress(0);
+  memcpy(&saved_data, p_saved_data, sizeof(saved_data));
+
+  if( (SENTINEL_VALUE == saved_data.sentinel) )
+  {
+    ASIC_HIGH = saved_data.asic_high;
+
+    #ifdef __DEBUG_VIA_SERIAL__
+    Serial.print("Restoring ASIC_HIGH value: "); Serial.println(ASIC_HIGH, 2);
+    #endif
+  } else
+  {
+    #ifdef __DEBUG_VIA_SERIAL__
+    Serial.print("Did not restore ASIC_HIGH, using default value: "); Serial.println(ASIC_HIGH, 2);
+    #endif
+  }
 }
 
 
@@ -4677,7 +4699,6 @@ bool checkRTDStatus(void)
 
   if( (ASIC_HIGH < sysStates.ASIC_Chiller_RTD.temperature) )
   {
-    
     ++chill_fail_count;
     
     #ifdef __DEBUG_VIA_SERIAL__
@@ -4818,6 +4839,22 @@ void handleSetH20AlarmASIC(void)
       {
         result = 1; // convert good
         ASIC_HIGH = temp;
+
+        //
+        // store ASIC_HIGH in due flash
+        //
+        byte store_saved_data[sizeof(saved_data)];
+        memset(&saved_data, '\0', sizeof(saved_data));
+        memset(&store_saved_data, '\0', sizeof(store_saved_data));
+        saved_data.sentinel   = SENTINEL_VALUE;
+        saved_data.asic_high  = ASIC_HIGH;
+        memcpy(&store_saved_data, &saved_data, sizeof(store_saved_data));
+
+        #ifdef __DEBUG_VIA_SERIAL__
+        Serial.print("Storing ASIC_HIGH value: "); Serial.println(saved_data.asic_high, 2);
+        #endif
+
+        dueFlashStorage.write(0, store_saved_data, sizeof(store_saved_data));
       }
       
       //Serial.print("ASIC_HIGH: "); Serial.println(ASIC_HIGH, 2);
