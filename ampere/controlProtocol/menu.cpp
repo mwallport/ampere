@@ -123,14 +123,6 @@ void createMenu(void)
     p_menuItem  = new menuGetH20AlarmASIC;
     menuItems.insert(pair<int, menuItemBase*>(i++, p_menuItem));
 
-/*      TODO: DELETE
-    p_menuItem  = new menuSetH20AlarmDDR;
-    menuItems.insert(pair<int, menuItemBase*>(i++, p_menuItem));
-
-    p_menuItem  = new menuGetH20AlarmDDR;
-    menuItems.insert(pair<int, menuItemBase*>(i++, p_menuItem));
-*/
-
     p_menuItem  = new menuSetRTCCmd;
     menuItems.insert(pair<int, menuItemBase*>(i++, p_menuItem));
 

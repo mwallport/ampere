@@ -1,6 +1,8 @@
 #ifndef __MENU__
 #define __MENU__
-#include <unistd.h>
+
+
+//#include <unistd.h>
 #include <iostream>
 #include <string>
 #include <cstdint>
@@ -77,7 +79,7 @@ class menuStartUpCmd : public menuItemBase
     pStartUpCmd_t m_pStartUpCmd  = &controlProtocol::StartUpCmd;
 
     menuStartUpCmd()
-        :   menuItemBase("startup system", "start temp control"),     // TODO: add chiller back for other
+        :   menuItemBase("startup system", "start temp control"),
             m_pStartUpCmd(&controlProtocol::StartUpCmd) {}
 
     void execute(controlProtocol* pCP)
@@ -101,7 +103,7 @@ class menuStartUpATCmd : public menuItemBase
     pStartUpATCmd_t m_pStartUpATCmd  = &controlProtocol::StartUpATCmd;
 
     menuStartUpATCmd()
-        :   menuItemBase("autotune", "start autotune temp control"),     // TODO: add chiller back for other
+        :   menuItemBase("autotune", "start autotune temp control"),
             m_pStartUpATCmd(&controlProtocol::StartUpATCmd) {}
 
     void execute(controlProtocol* pCP)
@@ -125,7 +127,7 @@ class menuShutDownCmd : public menuItemBase
     pShutDownCmd_t m_pShutDownCmd;
 
     menuShutDownCmd()
-        :   menuItemBase("shutdown system", "stop temp control"), // TODO : add back 'chiller not affected'
+        :   menuItemBase("shutdown system", "stop temp control"),
             m_pShutDownCmd(&controlProtocol::ShutDownCmd) {}
 
     void execute(controlProtocol* pCP)
@@ -149,7 +151,7 @@ class menuGetStatus : public menuItemBase
     pGetStatus_t m_pGetStatus;
 
     menuGetStatus()
-        :   menuItemBase("get status", "report TCU and RTD states"), // TODO add back 'humidity and chiller state'
+        :   menuItemBase("get status", "report TCU and RTD states"),
             m_pGetStatus(&controlProtocol::GetStatus) {}
 
     void execute(controlProtocol* pCP)
@@ -169,44 +171,12 @@ class menuGetStatus : public menuItemBase
           else
             cout << " and RUNNING" << endl;
 
-/*                                                                  TODO: DELETE
-          if( (ACUsRunning & (1 << 4)) )  // lame, but works
-            cout << "DDR ACU is OFFLINE";
-          else
-            cout << "DDR ACU is ONLINE";
-
-          if( (ACUsRunning & (1)) )
-            cout << " and NOT RUNNING" << endl;
-          else
-            cout << " and RUNNING" << endl;
-*/
-
           // RTD ouput next
           cout << "ASIC Chiller RTD";
           if( (RTDErrors & (1 << 12)) )
             cout << " has faults" << endl;
           else
             cout << " has no faults" << endl;
-
-/*                                                            TODO: DELETE
-          cout << "DDR1 RTD";
-          if( (RTDErrors & (1 << 8)) )
-            cout << " has faults" << endl;
-          else
-            cout << " has no faults" << endl;
-
-          cout << "DDR2 RTD";
-          if( (RTDErrors & (1 << 4)) )
-            cout << " has faults" << endl;
-          else
-            cout << " has no faults" << endl;
-
-          cout << "DDR Chiller RTD";
-          if( (RTDErrors & 1) )
-            cout << " has faults" << endl;
-          else
-            cout << " has no faults" << endl;
-*/
 
           #ifdef __USING_CHILLER__
           if( (chiller_humidity & 0x1000) )
@@ -747,6 +717,7 @@ class menuGetEventLogCmd : public menuItemBase
 
     void execute(controlProtocol* pCP)
     {
+      char* p_time = 0;
       memset(&eventlog, '\0', sizeof(eventlog));
 
       if( (pCP->*m_pGetEventLogCmd)(m_destId, &eventlog[0]) )
@@ -754,26 +725,38 @@ class menuGetEventLogCmd : public menuItemBase
         for(int i = 0; i < MAX_ELOG_ENTRY; i++)
         {
           // get the time stamp
-          memset(&ltime, '\0', sizeof(ltime));
-          ltime.tm_sec  = eventlog[i].ts.sec;
-          ltime.tm_min  = eventlog[i].ts.min;
-          ltime.tm_hour = eventlog[i].ts.hour + 1;
-          ltime.tm_mon  = eventlog[i].ts.mon - 1;
-          ltime.tm_year = eventlog[i].ts.year + 101;
-          ltime.tm_wday = eventlog[i].ts.wday;
-          ltime.tm_mday = eventlog[i].ts.mday;
+          if ((0 < eventlog[i].ts.mday))
+          {
+            memset(&ltime, '\0', sizeof(ltime));
+            ltime.tm_sec = eventlog[i].ts.sec;
+            ltime.tm_min = eventlog[i].ts.min;
+            ltime.tm_hour = eventlog[i].ts.hour + 1;
+            ltime.tm_mon = eventlog[i].ts.mon - 1;
+            ltime.tm_year = eventlog[i].ts.year + 101;
+            ltime.tm_wday = eventlog[i].ts.wday;
+            ltime.tm_mday = eventlog[i].ts.mday;
+
+            memset(time_buff, '\0', sizeof(time_buff));
+
+            if ((0 == (p_time = asctime(&ltime))))
+            {
+                snprintf(time_buff, 30, "no event time");
+            }
+            else
+            {
+              sprintf(time_buff, "%s", p_time);
+              time_buff[strlen(time_buff) - 1] = 0; // rid of the \n at the end
+            }
+          }
+          else
+          {
+            snprintf(time_buff, 30, "no event time");
+          }
 
           // get the id and the instance
           id  = eventlog[i].id & 0x0000ffff;
           inst  = (eventlog[i].id  >> 16) & 0x0000ffff;
-          memset(time_buff, '\0', sizeof(time_buff));
-          if( (0 == asctime_r(&ltime, time_buff)) )
-          {
-            snprintf(time_buff, 30, "no event time");
-          } else
-          {
-            time_buff[strlen(time_buff) - 1] = 0; // rid of the \n at the end
-          }
+
           switch(id)
           {
             case ACUNotOnLine:

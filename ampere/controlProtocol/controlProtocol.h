@@ -7,8 +7,8 @@
 //#define __DEBUG_CONTROL_PKT_RX__
 
 // platform
-#define __USING_LINUX_USB__
-//#define __USING_WINDOWS_USB__
+//#define __USING_LINUX_USB__
+#define __USING_WINDOWS_USB__
 //#define __RUNNING_ON_CONTROLLINO__
 
 //chiller
@@ -43,8 +43,11 @@
 #endif
 
 #ifdef __USING_WINDOWS_USB__
-    #include <winsock2.h>
+    //#include <winsock2.h>
+    #include <winsock.h>
     #include <windows.h>
+    #define  __PRETTY_FUNCTION__  ""
+    #define  _CRT_SECURE_NO_WARNINGS 1
 #endif
 
 #ifndef GET_LOW_NIBBLE

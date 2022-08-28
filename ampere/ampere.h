@@ -38,11 +38,6 @@
 // timeout for wait for menu command
 #define CTRL_TIMEOUT          250
 
-
-// millis() between DDR RTD samples while in RUNNING state
-// unsigned long timeBetweenSamples;    TODO: remove
-
-
 // uncomment for the siryn project as it will use chiller
 #define __USING_CHILLER__
 
@@ -57,11 +52,9 @@
 // the RS485 for each of the accuthermos
 // assuming ASIC will be RS485 id 1, DDR will be RS485 id 2
 #define   ASIC_RS485_ID   1
-//#define   DDR_RS485_ID    2    ** TODO: DELETE
 
 // index of the accuthermo in sysState ACU array - ease of display the lcd output
 #define   ASIC_ACU_IDX    0
-//#define   DDR_ACU_IDX     1     TODO: DELETE
 
 
 //
@@ -111,10 +104,7 @@ deviceHandler RS485Bus(Serial3, tx_buff, MAX_BUFF_LENGTH_MODBUS, rx_buff, MAX_BU
 //
 // Adafruit RTDs - do we have enough pins for all these ?
 //
-//Adafruit_MAX31865 DDR1_RTD(4);                      // #1     TODO: DELETE
-//Adafruit_MAX31865 DDR2_RTD(52);                     // #2     TODO: DELETE
 Adafruit_MAX31865 ASIC_Chiller_RTD(10);             // #3
-//Adafruit_MAX31865 DDR_Chiller_RTD(28, 26, 24, 22);            TODO: DELETE
 
 
 // The value of the Rref resistor. Use 430.0 for PT100 and 4300.0 for PT1000
@@ -123,21 +113,7 @@ Adafruit_MAX31865 ASIC_Chiller_RTD(10);             // #3
 // 100.0 for PT100, 1000.0 for PT1000
 #define RNOMINAL  100.0
 
-
 #define HZ_POWER_SWITCHPIN        38
-
-// for #1
-// #define RTD_DDR1_ISR_PIN          32   TODO: DELETE
-// for #2
-//#define RTD_DDR2_ISR_PIN          2   
-// for #3
-//#define ASIC_Chiller_RTD_ISR_PIN  30
-// for #4
-//#define DDR_Chiller_RTD_ISR_PIN   28
-
-//volatile bool RTD_DDR1_DRDY   = false;      TODO: DELETE
-//volatile unsigned long  RTD_DDR1_DRDY_StartTime = 0;  TODO: DELETE
-//unsigned long DRDY_GUARD_TIMER  = 7000;   TODO: DELETE
 
 //
 // contants
@@ -182,7 +158,6 @@ unsigned long  status_interval;
 // high RTD chiller temperature, if hit this, go to SHUTDOWN state
 // and don't start if RTD chiller temperature is this
 float ASIC_HIGH   = 28.0;
-//float DDR_HIGH    = 28.0;   TODO: REMOVE
 
 
 //
@@ -203,8 +178,6 @@ enum {
   // ASIC RTD status
   ASIC_RTD_Running, ASIC_RTD_Failure,
 
-  // DDR RTD status
-  //DDR_RTD_Running, DDR_RTD_Failure,   TODO: DELETE
 
 //#if defined(__USING_CHILLER__)
   // chiller
@@ -232,10 +205,6 @@ void lcd_ACUComFailure(); // set point and current temp
 // ASIC RTDs
 void lcd_ASIC_RTDs_Running();
 void lcd_ASIC_RTDs_Failure();
-
-// DDR RTDs
-//void lcd_DDR_RTDs_Running();    TODO: DELETE
-//void lcd_DDR_RTDs_Failure();    TODO: DELETE
 
 //#if defined(__USING_CHILLER__)
 // chiller
@@ -266,8 +235,6 @@ lcdFunc lcdFaces[MAX_LCD_FUNC] =
   lcd_ACUComFailure,  // can't communicate with one of the ACUs asterisks and which ACU
   lcd_ASIC_RTDs_Running,
   lcd_ASIC_RTDs_Failure,
-  //lcd_DDR_RTDs_Running,     TODO: DELETE
-  //lcd_DDR_RTDs_Failure,     TODO: DELETE
 //#if defined(__USING_CHILLER__)
   lcd_chillerRunning, // running - pump is on, etc. and temps
   lcd_chillerStopped, // not running - pump is off and temps
@@ -355,13 +322,6 @@ typedef struct _systemState
   ACUState    ACU[MAX_ACU_ADDRESS];
   RTDState    ASIC_RTD;             // ASIC chip temp - this RTD is connected to ASIC Accutermo - can't get fault
   RTDState    ASIC_Chiller_RTD;     // ASIC chiller temp - fault is reflected in status menu cmd
-/*                        TODO: DELETE
-  RTDState    DDR_RTD;              // DDR chip temp - this RTD is connected to the DDR Accuthermo - can't get fault
-  RTDState    DDR1_RTD;             // 2rd DDR chip temp - fault is reflected in status menu cmd
-  RTDState    DDR2_RTD;             // 2rd DDR chip temp - fault is reflected in status menu cmd
-  RTDState    DDR_Chiller_RTD;      // DDR chiller temp - fault is reflected in status menu cmd
-  float       highRTDTemp;          // will be the temperature of the hottest RTD in the DDR group
-*/
   LCDState    lcd;
   systemStatus  sysStatus;
 } systemState;
