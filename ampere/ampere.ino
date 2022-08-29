@@ -3382,7 +3382,7 @@ void handleACURunningStatus(uint8_t id)
 
     if( (4 < acu_running_fail_count) )
     {
-      acu_running_fail_count = 0;
+      //acu_running_fail_count = 0;
 
       #ifdef __DEBUG_VIA_SERIAL__
       Serial.print(__PRETTY_FUNCTION__); Serial.print(" ERROR:ACU ");
@@ -3507,7 +3507,7 @@ void handleACUTempStatus(uint8_t id, bool GetPVOnly)
 
     if( (4 < acu_temp_fail_count) )
     {
-      acu_temp_fail_count = 0;
+      //acu_temp_fail_count = 0;
 
       #ifdef __DEBUG_VIA_SERIAL3__
       Serial.print(__PRETTY_FUNCTION__); Serial.print(" ERROR:ACU ");
@@ -3681,9 +3681,9 @@ bool handleRTDStatus()
 
     delay(250);
 
-    if( ( 10 < asic_chiller_rtd_fail_count) )
+    if( ( 5 < asic_chiller_rtd_fail_count) )
     {
-      asic_chiller_rtd_fail_count = 0;
+      //asic_chiller_rtd_fail_count = 0;
 
       #ifdef __DEBUG_VIA_SERIAL__
       Serial.println("asic_chiller_rtd_fail_count high returning bad status");
@@ -4683,9 +4683,9 @@ bool checkRTDStatus(void)
 
     delay(250);
 
-    if( ( 10 < rtd_fail_count) )
+    if( ( 5 < rtd_fail_count) )
     {
-      rtd_fail_count = 0;
+      //rtd_fail_count = 0;
       retVal = false;
 
       #ifdef __DEBUG_VIA_SERIAL__
@@ -4702,15 +4702,16 @@ bool checkRTDStatus(void)
     ++chill_fail_count;
     
     #ifdef __DEBUG_VIA_SERIAL__
-    Serial.print("RTD chiller temp too high may return bad status, count is: "); Serial.println(chill_fail_count);
+    Serial.print("RTD chiller temp too high may return bad status, count is: ");
+    Serial.println(chill_fail_count);
     Serial.println(sysStates.ASIC_Chiller_RTD.temperature,2);
     #endif
 
     delay(250);
 
-    if( ( 10 < chill_fail_count) )
+    if( ( 5 < chill_fail_count) )
     {
-      chill_fail_count = 0;
+      //chill_fail_count = 0;
       retVal = false;
 
       #ifdef __DEBUG_VIA_SERIAL__
