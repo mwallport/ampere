@@ -19,7 +19,7 @@ using namespace std;
 typedef bool (controlProtocol::*pStartUpCmd_t)(uint16_t);
 typedef bool (controlProtocol::*pStartUpATCmd_t)(uint16_t);
 typedef bool (controlProtocol::*pShutDownCmd_t)(uint16_t);
-typedef bool (controlProtocol::*pGetStatus_t)(uint16_t, uint16_t*, uint16_t*, uint16_t*);
+typedef bool (controlProtocol::*pGetStatus_t)(uint16_t, uint16_t*, uint16_t*, uint16_t*, uint16_t*);
 typedef bool (controlProtocol::*pGetHumidity_t)(uint16_t, float*);
 typedef bool (controlProtocol::*pSetHumidityThreshold_t)(uint16_t, uint16_t);
 typedef bool (controlProtocol::*pGetHumidityThreshold_t)(uint16_t, uint16_t*);
@@ -45,6 +45,7 @@ typedef bool (controlProtocol::*pSetH20AlarmDDR_t)(uint16_t, float);
 typedef bool (controlProtocol::*pGetH20AlarmDDR_t)(uint16_t, float*);
 typedef bool (controlProtocol::*pGetTempCmd_t)(uint16_t, uint16_t*);
 
+typedef enum { SHUTDOWN, READY, RUNNING, UNKNOWN };
 
 class menuItemBase
 {
@@ -156,9 +157,37 @@ class menuGetStatus : public menuItemBase
 
     void execute(controlProtocol* pCP)
     {
-        if( (pCP->*m_pGetStatus)(m_destId, &RTDErrors, &ACUsRunning, &chiller_humidity) )
+        if( (pCP->*m_pGetStatus)(m_destId, &RTDErrors, &ACUsRunning, &chiller_humidity, &systemStatus) )
         {
           cout << endl;
+
+          switch (systemStatus)
+          {
+            case SHUTDOWN:
+            {
+                cout << "System state: SHUTDOWN" << endl;
+                break;
+            }
+
+            case READY:
+            {
+                cout << "System state: READY" << endl;
+                break;
+            }
+
+            case RUNNING:
+            {
+                cout << "System state: RUNNING" << endl;
+                break;
+            }
+
+            default:
+            case UNKNOWN:
+            {
+                cout << "System state: UNKNOWN" << endl;
+                break;
+            }
+          }
 
           // ACUs output first 
           if( (ACUsRunning & (1 << 12)) )  // lame, but works
@@ -211,6 +240,7 @@ class menuGetStatus : public menuItemBase
     uint16_t RTDErrors;
     uint16_t ACUsRunning;
     uint16_t chiller_humidity;
+    uint16_t systemStatus;
     
     private:
     menuGetStatus(const menuItemBase&);
@@ -225,24 +255,11 @@ class menuSetACUTemperature : public menuItemBase
     pSetACUTemperature_t m_pSetACUTemperature;
     bool getParameters(void)
     {
-        cout << "enter ACU address:  ";
-        cin >> ACUAddress;
-/*
-        if( !(cin >> ACUAddress) )
-        {
-          cout << "bad input" << endl;
-          return(false);
-        }
-*/
+        ACUAddress = 1;
+
         cout << "enter temperature: ";
         cin >> temperature;
-/*
-        if( !(cin >> temperature) )
-        {
-          cout << "bad input" << endl;
-          return(false);
-        }
-*/
+
         return(true);
     }
 
@@ -274,16 +291,7 @@ class menuGetACUTemperature : public menuItemBase
     pGetACUTemperature_t m_pGetACUTemperature;
     bool getParameters(void)
     {
-        cout << "enter ACU address:  ";
-
-        cin >> ACUAddress;
-/*
-        if( !(cin >> ACUAddress) )
-        {
-          cout << "bad input" << endl;
-          return(false);
-        }
-*/
+        ACUAddress = 1;
 
         return(true);
     }
@@ -321,16 +329,7 @@ class menuGetACUObjTemperature : public menuItemBase
     
     bool getParameters(void)
     {
-        cout << "enter ACU address:  ";
-
-        cin >> ACUAddress;
-/*
-        if( !(cin >> ACUAddress) )
-        {
-          cout << "bad input" << endl;
-          return(false);
-        }
-*/
+        ACUAddress = 1;
 
         return(true);
     }
@@ -457,7 +456,7 @@ class menuSetChillerTemperature : public menuItemBase
     }
 
     menuSetChillerTemperature()
-        :   menuItemBase("set chiller temperature", "set the chiller set-point temp"),
+        :   menuItemBase("set chiller SV", "set the chiller target temp"),
             m_pSetChillerTemperature(&controlProtocol::SetChillerTemperature) {}
 
     void execute(controlProtocol* pCP)
@@ -483,13 +482,13 @@ class menuGetChillerTemperature : public menuItemBase
     pGetChillerTemperature_t m_pGetChillerTemperature;
 
     menuGetChillerTemperature()
-        :   menuItemBase("get chiller temperature", "get the chiller set-point temp"),
+        :   menuItemBase("get chiller SV", "get the chiller target temp"),
             m_pGetChillerTemperature(&controlProtocol::GetChillerTemperature) {}
 
     void execute(controlProtocol* pCP)
     {
         if( (pCP->*m_pGetChillerTemperature)(m_destId, &temperature) )
-            cout << "\nchiller set-point temperature: " << temperature << endl;
+            cout << "\nchiller target temperature: " << temperature << endl;
         else
             cout << "\nget chiller temperature failed" << endl;
     }
@@ -508,15 +507,15 @@ class menuGetChillerObjTemperature : public menuItemBase
     pGetChillerObjTemperature_t m_pGetChillerObjTemperature;
     
     menuGetChillerObjTemperature()
-        :   menuItemBase("get chiller obj temperature", "get the chiller internal temp"),
+        :   menuItemBase("get chiller PV", "get the chiller water temp"),
             m_pGetChillerObjTemperature(&controlProtocol::GetChillerObjTemperature) {}
 
     void execute(controlProtocol* pCP)
     {
         if( (pCP->*m_pGetChillerObjTemperature)(m_destId, &temperature) )
-            cout << "\nchiller internal temperature: " << temperature << endl;
+            cout << "\nchiller PV temperature: " << temperature << endl;
         else
-            cout << "\nget chiller obj temperature failed" << endl;
+            cout << "\nget chiller PV temperature failed" << endl;
     }
 
     float   temperature;

@@ -107,12 +107,6 @@ void initSystem(void)
   digitalWrite(RS485_WRITE_ENABLE, LOW);
 
 
-  //
-  // initialize the fault/no-fault LED(s)
-  //
-  configureFaultNoFault();
-
-
   Wire1.begin();  // for the RTC; the Wire.begin() is called only if using SHT
 
 
@@ -305,6 +299,11 @@ void initSystem(void)
     Serial.print("Did not restore ASIC_HIGH, using default value: "); Serial.println(ASIC_HIGH, 2);
     #endif
   }
+
+  //
+  // initialize the fault/no-fault LED(s)
+  //
+  configureFaultNoFault();
 }
 
 
@@ -376,8 +375,11 @@ void initSysStates(systemState& states)
 void configureFaultNoFault(void)
 {
   pinMode(FAULT_LED, OUTPUT);
-  digitalWrite(FAULT_LED, HIGH);
   pinMode(NO_FAULT_LED, OUTPUT);
+  digitalWrite(FAULT_LED, LOW);
+  digitalWrite(NO_FAULT_LED, LOW);
+  delay(250);
+  digitalWrite(FAULT_LED, HIGH);
   digitalWrite(NO_FAULT_LED, LOW);
 }
 
@@ -1996,6 +1998,7 @@ void handleGetStatusCmd(void)
         getRTDErrors(),            // return bit map of RTDErrors 
         getACUErrorsAndRunState(), // ACUs running
         chiller_humidity,          // values are set if using them
+        sysStates.sysStatus,
         pgetStatus->header.seqNum
       );
 
@@ -3198,6 +3201,7 @@ void handleChillerStatus(void)
   if( (offline == sysStates.chiller.online) )
   {
     digitalWrite(FAULT_LED, HIGH);
+    delay(250);                         // TODO : new
     digitalWrite(NO_FAULT_LED, LOW);
   }
 

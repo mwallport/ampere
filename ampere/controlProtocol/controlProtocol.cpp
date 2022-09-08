@@ -578,7 +578,8 @@ bool controlProtocol::TxResponseSerial(uint16_t length)
 
 
 bool controlProtocol::GetStatus(uint16_t destAddress, uint16_t* RTDsRunning,
-                            uint16_t* ACUsRunning,  uint16_t* chillerOnLine)
+                                uint16_t* ACUsRunning,  uint16_t* chillerOnLine,
+                                uint16_t* systemStatus)
 {
     bool                retVal  = false;
     uint16_t            seqNum;
@@ -653,11 +654,11 @@ bool controlProtocol::GetStatus(uint16_t destAddress, uint16_t* RTDsRunning,
             //
             // report the health
             //
-            Parse_getStatusResp(m_buff, RTDsRunning, ACUsRunning, chillerOnLine, &seqNum);
+            Parse_getStatusResp(m_buff, RTDsRunning, ACUsRunning, chillerOnLine, systemStatus, &seqNum);
 
             #ifdef __DEBUG_CTRL_PROTO__
-            printf("found in packet RTDsRunning %u ACUsRunning %u, chillerOnLine %u, seqNumer 0x%02x\n",
-                *RTDsRunning, *ACUsRunning, *chillerOnLine, seqNum);
+            printf("found in packet RTDsRunning %u ACUsRunning %u, chillerOnLine %u, systemStatus %u, seqNumer 0x%02x\n",
+                *RTDsRunning, *ACUsRunning, *chillerOnLine, *systemStatus, seqNum);
             #endif
 
             retVal  = true;
@@ -3503,7 +3504,7 @@ uint16_t controlProtocol::Make_getStatus(uint16_t Address, uint8_t* pBuff)
 
 
 uint16_t controlProtocol::Make_getStatusResp(uint16_t Address, uint8_t* pBuff, uint16_t RTDsRunning,
-                    uint16_t ACUsRunning, uint16_t chillerOnLine, uint16_t SeqNum)
+                    uint16_t ACUsRunning, uint16_t chillerOnLine, uint16_t systemStatus, uint16_t SeqNum)
 {
     getStatusResp_t*    msg  = reinterpret_cast<getStatusResp_t*>(pBuff);
     uint16_t            CRC  = 0;
@@ -3518,6 +3519,7 @@ uint16_t controlProtocol::Make_getStatusResp(uint16_t Address, uint8_t* pBuff, u
     msg->status.RTDsRunning     = htons(RTDsRunning);
     msg->status.ACUsRunning     = htons(ACUsRunning);
     msg->status.chillerOnLine   = htons(chillerOnLine);
+    msg->status.systemStatus    = htons(systemStatus);
 
     // calculate the CRC
     CRC = calcCRC16(pBuff, len_getStatusResp_t);
@@ -3533,7 +3535,7 @@ uint16_t controlProtocol::Make_getStatusResp(uint16_t Address, uint8_t* pBuff, u
 
 
 void controlProtocol::Parse_getStatusResp(uint8_t* m_buff, uint16_t* RTDsRunning,
-        uint16_t* ACUsRunning, uint16_t* chillerOnLine, uint16_t* pSeqNum)
+        uint16_t* ACUsRunning, uint16_t* chillerOnLine, uint16_t* systemStatus, uint16_t* pSeqNum)
 {
     getStatusResp_t* pResponse = reinterpret_cast<getStatusResp_t*>(m_buff);
 
@@ -3543,6 +3545,7 @@ void controlProtocol::Parse_getStatusResp(uint8_t* m_buff, uint16_t* RTDsRunning
     *RTDsRunning    = ntohs(pResponse->status.RTDsRunning);
     *ACUsRunning    = ntohs(pResponse->status.ACUsRunning);
     *chillerOnLine  = ntohs(pResponse->status.chillerOnLine);
+    *systemStatus   = ntohs(pResponse->status.systemStatus);
     *pSeqNum        = pResponse->header.seqNum;
 }
 
