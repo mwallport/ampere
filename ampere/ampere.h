@@ -1,4 +1,3 @@
-
 #ifndef __CARMEL_SIRYN__
 #define __CARMEL_SIRYN__
 #include <LiquidCrystal.h>
@@ -21,10 +20,10 @@
 
 
 // this is for important, error condition debug output
-#define __DEBUG_VIA_SERIAL__
+//#define __DEBUG_VIA_SERIAL__
 
 // this is for frivilous debug output
-#define __DEBUG2_VIA_SERIAL__
+//#define __DEBUG2_VIA_SERIAL__
 
 //#define __DEBUG_VIA_SERIAL3__
 
@@ -127,13 +126,9 @@ unsigned long  status_interval;
 
 #define BUTTON_PERIOD         250
 #define BUTTON_COUNT_FOR_AT1  5000
-//#define PIN_HW_ENABLE_n       8
-//#define SWITCH_PIN            9
-//#define MAX_BUFF_LENGHT       10
 #define MAX_ACU_ADDRESS       1
 #define MIN_ACU_ADDRESS       1
 #define MAX_SHUTDOWN_ATTEMPTS 1
-//#define MAX_RTD_ADDRESS       7
 
 
 #define SYSTEM_NRML_OFFSET    0   // 2 msgs, good and bad
@@ -142,19 +137,12 @@ unsigned long  status_interval;
 #define ACU_FAIL_OFFSET       3   // 2 msgs, good and bad
 #define ASIC_RTD_NRML_OFFSET  4
 #define ASIC_RTD_FAIL_OFFSET  5
-//#define DDR_RTD_NRML_OFFSET   6
-//#define DDR_RTD_FAIL_OFFSET   7
 
-//#if defined(__USING_CHILLER__)
 #define CHILLER_NRML_OFFSET   6   // 2 msgs, good and bad
 #define CHILLER_FAIL_OFFSET   7   // 2 msgs, good and bad
 #define HUMIDITY_NRML_OFFSET  8   // 2 msgs, good and bad
 #define HUMIDITY_FAIL_OFFSET  9   // 2 msgs, good and bad
 #define MAX_LCD_MSGS            (HUMIDITY_FAIL_OFFSET + 1)
-
-//#else
-//#define MAX_LCD_MSGS      (DDR_RTD_FAIL_OFFSET + 1)
-//#endif
 #define MAX_MSG_DISPLAY_TIME  4000  // 1.5 minimum seconds per message
 
 //
@@ -191,11 +179,8 @@ enum {
   // ASIC RTD status
   ASIC_RTD_Running, ASIC_RTD_Failure,
 
-
-//#if defined(__USING_CHILLER__)
-  // chiller
+  // chiller status
   chiller_Running, chiller_Stopped, chiller_ComFailure,
-//#endif
   sensor_humidityAndThreshold,
   sensor_HighHumidity, sensor_Failure,
   
@@ -219,12 +204,9 @@ void lcd_ACUComFailure(); // set point and current temp
 void lcd_ASIC_RTDs_Running();
 void lcd_ASIC_RTDs_Failure();
 
-//#if defined(__USING_CHILLER__)
-// chiller
 void lcd_chillerRunning();    //set point and current temp
 void lcd_chillerStopped();    // running or stopped or fail
 void lcd_chillerComFailure();   // can't communicate with the chiller
-//#endif
 
 // sensor
 void lcd_humidityAndThreshold();    // current humidity and threshold
@@ -248,11 +230,9 @@ lcdFunc lcdFaces[MAX_LCD_FUNC] =
   lcd_ACUComFailure,  // can't communicate with one of the ACUs asterisks and which ACU
   lcd_ASIC_RTDs_Running,
   lcd_ASIC_RTDs_Failure,
-//#if defined(__USING_CHILLER__)
   lcd_chillerRunning, // running - pump is on, etc. and temps
   lcd_chillerStopped, // not running - pump is off and temps
   lcd_chillerComFailure,  // can't communicate with the chiller
-//#endif
   lcd_humidityAndThreshold, // normal humidity
   lcd_highHumidity,   // high humidity
   lcd_sensorFailure
@@ -328,9 +308,7 @@ typedef struct _LCDState
 
 typedef struct _systemState
 {
-//#if defined (__USING_CHILLER__)
   chillerState  chiller;
-//#endif
   humidityState sensor;
   ACUState    ACU[MAX_ACU_ADDRESS];
   RTDState    ASIC_RTD;             // ASIC chip temp - this RTD is connected to ASIC Accutermo - can't get fault
@@ -371,6 +349,6 @@ volatile int bp_count = -2;  // button press 1
 // splash screen conents - shown during boot while the system is coming on-line
 //
 const char deftDevise[16] = "Thermic Rule ";
-const char buildInfo[16]  = "220827 v1.0  ";
+const char buildInfo[16]  = "220827 v1.0a ";
 
 #endif

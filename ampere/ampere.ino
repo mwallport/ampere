@@ -1396,20 +1396,20 @@ void lcd_ACUsRunning(void)
   lcd.setCursor(0,0);
   lcd.print("Sys Comm ONLINE");
   lcd.setCursor(0,1);
-  lcd.print("ASIC Sv      Pv     ");
+  lcd.print("Sv      Pv     ");
 
   // if the SV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].setpoint < 0) )
-    lcd.setCursor(7,1);
+    lcd.setCursor(2,1);
   else
-    lcd.setCursor(8,1);
+    lcd.setCursor(3,1);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].setpoint,1);
 
   // if the PV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].temperature < 0) )
-    lcd.setCursor(15,1);
+    lcd.setCursor(10,1);
   else
-    lcd.setCursor(16,1);
+    lcd.setCursor(11,1);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].temperature,1);
 
   lcd.display();
@@ -1429,20 +1429,20 @@ void lcd_ACUsStopped(void)
   lcd.setCursor(0,0);
   lcd.print("Sys Comm OFFLINE");
   lcd.setCursor(0,1);
-  lcd.print("ASIC Sv      Pv     ");
+  lcd.print("Sv      Pv     ");
 
   // if the SV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].setpoint < 0) )
-    lcd.setCursor(7,1);
+    lcd.setCursor(2,1);
   else
-    lcd.setCursor(8,1);
+    lcd.setCursor(3,1);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].setpoint,1);
 
   // if the PV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].temperature < 0) )
-    lcd.setCursor(15,1);
+    lcd.setCursor(10,1);
   else
-    lcd.setCursor(16,1);
+    lcd.setCursor(11,1);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].temperature,1);
   
   lcd.display();
@@ -1465,9 +1465,9 @@ void lcd_ACUComFailure(void)
   // print the ASIC controll status
   lcd.setCursor(0,1);
   if( (offline == sysStates.ACU[ASIC_ACU_IDX].online) )
-    lcd.print("ASIC OFFLINE");
+    lcd.print("CU OFFLINE");
   else
-    lcd.print("ASIC ONLINE");
+    lcd.print("CU ONLINE");
 
   lcd.display();
 }
@@ -1484,7 +1484,7 @@ void lcd_ASIC_RTDs_Running(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("ASIC RTDs     ");
+  lcd.print("CU RTDs     ");
   lcd.setCursor(0,2);
   lcd.print("1. ");
   lcd.setCursor(3,2);
@@ -1525,7 +1525,7 @@ void lcd_ASIC_RTDs_Failure(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("ASIC RTD FAILURE");
+  lcd.print("CU RTD FAILURE");
   lcd.setCursor(0,2);
   lcd.print("1. 0x");
   lcd.setCursor(5,2);
@@ -1560,6 +1560,10 @@ void lcd_chillerRunning(void)
   lcd.print("T: ");
   lcd.setCursor(12,1);
   lcd.print(sysStates.chiller.temperature);
+  lcd.setCursor(0,2);
+  lcd.print("alarm temp: ");
+  lcd.setCursor(12,2);
+  lcd.print(ASIC_HIGH);
   lcd.display();
 }
 

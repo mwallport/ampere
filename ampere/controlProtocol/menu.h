@@ -191,9 +191,9 @@ class menuGetStatus : public menuItemBase
 
           // ACUs output first 
           if( (ACUsRunning & (1 << 12)) )  // lame, but works
-            cout << "ASIC ACU is OFFLINE";
+            cout << "CU is OFFLINE";
           else
-            cout << "ASIC ACU is ONLINE";
+            cout << "CU is ONLINE";
 
           if( (ACUsRunning & (1 << 8)) )
             cout << " and NOT RUNNING" << endl;
@@ -201,7 +201,7 @@ class menuGetStatus : public menuItemBase
             cout << " and RUNNING" << endl;
 
           // RTD ouput next
-          cout << "ASIC Chiller RTD";
+          cout << "Chiller RTD";
           if( (RTDErrors & (1 << 12)) )
             cout << " has faults" << endl;
           else
@@ -782,16 +782,16 @@ class menuGetEventLogCmd : public menuItemBase
             }
             case ASIC_RTDFault:
             {
-              printf("%-26s : %-18s ASCI RTD fault\n",
-                time_buff, "ASIC_RTDFault");
+              printf("%-26s : %-18s CU RTD fault\n",
+                time_buff, "CU_RTDFault");
                 //asctime(&ltime), "ChillerOffline");
 
               break;
             }
             case ASIC_Chiller_RTDFault:
             {
-              printf("%-26s : %-18s ASIC chiller RTD fault\n",
-                time_buff, "ASIC_Chiller_RTDFault");
+              printf("%-26s : %-18s chiller RTD fault\n",
+                time_buff, "Chiller_RTDFault");
                 //asctime(&ltime), "ChillerOffline");
 
               break;
@@ -814,8 +814,8 @@ class menuGetEventLogCmd : public menuItemBase
             }
             case ASIC_Chiller_RTDHot: // TODO: add the temp to the output
             {
-              printf("%-26s : %-18s ASIC chiller RTD hot\n",
-                time_buff, "ASIC_Chiller_RTDHot");
+              printf("%-26s : %-18s chiller RTD hot\n",
+                time_buff, "Chiller_RTDHot");
                 //asctime(&ltime), "ChillerOffline");
 
               break;
@@ -914,15 +914,15 @@ class menuSetH20AlarmASIC : public menuItemBase
     }
 
     menuSetH20AlarmASIC()
-        :   menuItemBase("set H2O alarm ASIC", "set the shut-off threshold for ASIC H2O temp"),
+        :   menuItemBase("set H2O alarm ", "set the shut-off threshold for H2O temp"),
             m_pSetH20AlarmASIC(&controlProtocol::SetH20AlarmASIC) {}
 
     void execute(controlProtocol* pCP)
     {
         if( (pCP->*m_pSetH20AlarmASIC)(m_destId, temperature) )
-            cout << "\nset H2O alarm ASIC successful" << endl;
+            cout << "\nset H2O alarm successful" << endl;
         else
-            cout << "\nset H2O alarm ASIC failed" << endl;
+            cout << "\nset H2O alarm failed" << endl;
     }
 
     float   temperature;
@@ -940,15 +940,15 @@ class menuGetH20AlarmASIC : public menuItemBase
     pGetH20AlarmASIC_t m_pGetH20AlarmASIC;
 
     menuGetH20AlarmASIC()
-        :   menuItemBase("get H2O alarm ASIC", "get the the temp"),
+        :   menuItemBase("get H2O alarm", "get the the temp"),
             m_pGetH20AlarmASIC(&controlProtocol::GetH20AlarmASIC) {}
 
     void execute(controlProtocol* pCP)
     {
         if( (pCP->*m_pGetH20AlarmASIC)(m_destId, &temperature) )
-            cout << "\nH2O alarm ASIC: " << temperature << endl;
+            cout << "\nH2O alarm: " << temperature << endl;
         else
-            cout << "\nget H2O alarm ASIC failed" << endl;
+            cout << "\nget H2O alarm failed" << endl;
     }
 
     float   temperature;
