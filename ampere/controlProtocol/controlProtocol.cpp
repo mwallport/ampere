@@ -967,10 +967,6 @@ bool controlProtocol::GetHumidityThreshold(uint16_t destAddress, uint16_t* thres
 }
 
 
-
-
-
-
 bool controlProtocol::SetACUTemperature(uint16_t destAddress, uint16_t acu_address, float temperature)
 {
     bool                retVal  = false;

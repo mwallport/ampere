@@ -25,10 +25,10 @@ void setup(void)
   #endif
  
   //
-  // always start the chiller
+  // don't always start the chiller ( according to Rick, we don't want to do this )
   //
   #ifdef __USING_CHILLER__
-  startChiller();
+  //startChiller();
   #endif
   
   //
@@ -568,6 +568,30 @@ bool startUp(bool startAT)
   Serial.println(__PRETTY_FUNCTION__);
   #endif
 
+  //
+  // this will try to start the chiller, then calls setSystemStatus to update the state
+  // soo .. if the chiller needed starting and DOES successfully start the state will
+  // become READY
+  // 
+  // start the chiller and the ACUs
+  //
+  #ifdef __USING_CHILLER__
+  if( !(startChiller()) )
+    return(false);
+  #endif  
+  
+  #ifdef __DEBUG_VIA_SERIAL__
+  Serial.print("system is in state: "); Serial.println(sysStates.sysStatus);
+  #endif
+
+  if( (SHUTDOWN == sysStates.sysStatus) )
+  {
+    #ifdef __DEBUG_VIA_SERIAL__
+    Serial.println("not starting - system is in SHUTDOWN state");
+    #endif
+
+    return(false);
+  }
 
   #ifdef __USING_HUMIDITY__
   //
@@ -577,15 +601,7 @@ bool startUp(bool startAT)
   if( (humidityHigh()) )
     return(false);
   #endif
-
-  //
-  // start the chiller and the ACUs
-  //
-  #ifdef __USING_CHILLER__
-  if( !(startChiller()) )
-    return(false);
-  #endif
-  
+ 
 
   if( (startACUs(startAT)) )
   {
@@ -821,7 +837,7 @@ bool startChiller(void)
   //
   // update the system state
   //
-  //setSystemStatus();
+  setSystemStatus();
 
 #endif
 
@@ -1241,7 +1257,7 @@ void lcd_initializing(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("SYS initializing");
+  lcd.print("System Initializing");
   lcd.display();
 }
 
@@ -1292,7 +1308,7 @@ void lcd_ready(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("SYS ready");
+  lcd.print("System READY");
   lcd.display();
 }
 
@@ -1308,7 +1324,7 @@ void lcd_running(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("SYS running");
+  lcd.print("System RUNNING");
   lcd.display();
 }
 
@@ -1324,7 +1340,7 @@ void lcd_shutdown(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("SYS shutdown");
+  lcd.print("System SHUTDOWN");
   lcd.display();
 }
 
@@ -1360,7 +1376,7 @@ void lcd_startFailed(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("SYS start fail");
+  lcd.print("System START FAIL");
   lcd.display();
 }
 
@@ -1376,9 +1392,9 @@ void lcd_systemFailure(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("SYS fail");
+  lcd.print("System FAIL");
   lcd.setCursor(0,1);
-  lcd.print("failure");
+  lcd.print("FAILURE");
   lcd.display();
 }
 
@@ -1395,21 +1411,21 @@ void lcd_ACUsRunning(void)
   lcd.home();
   lcd.setCursor(0,0);
   lcd.print("Sys Comm ONLINE");
-  lcd.setCursor(0,1);
-  lcd.print("Sv      Pv     ");
+  lcd.setCursor(0,2);
+  lcd.print("SV:       PV:     ");
 
   // if the SV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].setpoint < 0) )
-    lcd.setCursor(2,1);
+    lcd.setCursor(4,2);
   else
-    lcd.setCursor(3,1);
+    lcd.setCursor(4,2);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].setpoint,1);
 
   // if the PV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].temperature < 0) )
-    lcd.setCursor(10,1);
+    lcd.setCursor(14,2);
   else
-    lcd.setCursor(11,1);
+    lcd.setCursor(14,2);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].temperature,1);
 
   lcd.display();
@@ -1428,21 +1444,21 @@ void lcd_ACUsStopped(void)
   lcd.home();
   lcd.setCursor(0,0);
   lcd.print("Sys Comm OFFLINE");
-  lcd.setCursor(0,1);
-  lcd.print("Sv      Pv     ");
+  lcd.setCursor(0,2);
+  lcd.print("SV:       PV:     ");
 
   // if the SV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].setpoint < 0) )
-    lcd.setCursor(2,1);
+    lcd.setCursor(4,2);
   else
-    lcd.setCursor(3,1);
+    lcd.setCursor(4,2);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].setpoint,1);
 
   // if the PV is negative, scoot left one position
   if( (sysStates.ACU[ASIC_ACU_IDX].temperature < 0) )
-    lcd.setCursor(10,1);
+    lcd.setCursor(14,2);
   else
-    lcd.setCursor(11,1);
+    lcd.setCursor(14,2);
   lcd.print(sysStates.ACU[ASIC_ACU_IDX].temperature,1);
   
   lcd.display();
@@ -1465,9 +1481,9 @@ void lcd_ACUComFailure(void)
   // print the ASIC controll status
   lcd.setCursor(0,1);
   if( (offline == sysStates.ACU[ASIC_ACU_IDX].online) )
-    lcd.print("CU OFFLINE");
+    lcd.print("ACU OFFLINE");
   else
-    lcd.print("CU ONLINE");
+    lcd.print("ACU ONLINE");
 
   lcd.display();
 }
@@ -1484,14 +1500,14 @@ void lcd_ASIC_RTDs_Running(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("CU RTDs     ");
+  lcd.print("TCU Process Temps");
   lcd.setCursor(0,2);
-  lcd.print("1. ");
-  lcd.setCursor(3,2);
+  lcd.print("DUT: ");
+  lcd.setCursor(5,2);
   lcd.print(sysStates.ASIC_RTD.temperature, 1);
   lcd.setCursor(11, 2);
-  lcd.print("H2O");
-  lcd.setCursor(15, 2);
+  lcd.print("H2O:");
+  lcd.setCursor(16, 2);
   lcd.print(sysStates.ASIC_Chiller_RTD.temperature,1);
 
   //
@@ -1525,14 +1541,14 @@ void lcd_ASIC_RTDs_Failure(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("CU RTD FAILURE");
+  lcd.print("ACU RTD FAILURE");
   lcd.setCursor(0,2);
-  lcd.print("1. 0x");
-  lcd.setCursor(5,2);
+  lcd.print("DUT: 0x");
+  lcd.setCursor(7,2);
   lcd.print(sysStates.ASIC_RTD.fault, HEX);
-  lcd.setCursor(10, 2);
-  lcd.print("H2O 0x");
-  lcd.setCursor(16, 2);
+  lcd.setCursor(12, 2);
+  lcd.print("H2O: 0x");
+  lcd.setCursor(18, 2);
   lcd.print(sysStates.ASIC_Chiller_RTD.fault, HEX);
 
   lcd.display();
@@ -1551,18 +1567,18 @@ void lcd_chillerRunning(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("CHL RUNNING");
-  lcd.setCursor(0,1);
-  lcd.print("S: ");
-  lcd.setCursor(3,1);
-  lcd.print(sysStates.chiller.setpoint);
-  lcd.setCursor(9,1);
-  lcd.print("T: ");
-  lcd.setCursor(12,1);
-  lcd.print(sysStates.chiller.temperature);
+  lcd.print("Chiller RUNNING");
   lcd.setCursor(0,2);
-  lcd.print("alarm temp: ");
-  lcd.setCursor(12,2);
+  lcd.print("SV: ");
+  lcd.setCursor(4,2);
+  lcd.print(sysStates.chiller.setpoint);
+  lcd.setCursor(10,2);
+  lcd.print("PV: ");
+  lcd.setCursor(14,2);
+  lcd.print(sysStates.chiller.temperature);
+  lcd.setCursor(0,3);
+  lcd.print("Alarm Temp: ");
+  lcd.setCursor(12,3);
   lcd.print(ASIC_HIGH);
   lcd.display();
 }
@@ -1580,14 +1596,14 @@ void lcd_chillerStopped(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,0);
-  lcd.print("CHL STOPPED");
-  lcd.setCursor(0,1);
-  lcd.print("S: ");
-  lcd.setCursor(3,1);
+  lcd.print("Chiller STOPPED");
+  lcd.setCursor(0,2);
+  lcd.print("SV: ");
+  lcd.setCursor(4,2);
   lcd.print(sysStates.chiller.setpoint);
-  lcd.setCursor(9,1);
-  lcd.print("T: ");
-  lcd.setCursor(12,1);
+  lcd.setCursor(10,2);
+  lcd.print("PV: ");
+  lcd.setCursor(13,2);
   lcd.print(sysStates.chiller.temperature);
   lcd.display();
 }
@@ -1604,7 +1620,7 @@ void lcd_chillerComFailure(void)
   lcd.clear();
   lcd.home();
   lcd.setCursor(0,1);
-  lcd.print("CHL COM FAILURE");
+  lcd.print("Chiller COM FAILURE");
   lcd.display();
 }
 //#endif
@@ -4122,8 +4138,9 @@ void disableButtonISR(void)
   Serial.println(__PRETTY_FUNCTION__);
   #endif
 
-  detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
-  pinMode(BUTTON_PIN, OUTPUT);
+// always keep button enabled .. gotta' try to start from SHUTDOWN state
+//  detachInterrupt(digitalPinToInterrupt(BUTTON_PIN));
+//  pinMode(BUTTON_PIN, OUTPUT);
 }
 
 

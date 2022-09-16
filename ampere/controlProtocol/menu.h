@@ -152,7 +152,7 @@ class menuGetStatus : public menuItemBase
     pGetStatus_t m_pGetStatus;
 
     menuGetStatus()
-        :   menuItemBase("get status", "report TCU and RTD states"),
+        :   menuItemBase("get status", "report ACU and RTD states"),
             m_pGetStatus(&controlProtocol::GetStatus) {}
 
     void execute(controlProtocol* pCP)
@@ -191,9 +191,9 @@ class menuGetStatus : public menuItemBase
 
           // ACUs output first 
           if( (ACUsRunning & (1 << 12)) )  // lame, but works
-            cout << "CU is OFFLINE";
+            cout << "ACU is OFFLINE";
           else
-            cout << "CU is ONLINE";
+            cout << "ACU is ONLINE";
 
           if( (ACUsRunning & (1 << 8)) )
             cout << " and NOT RUNNING" << endl;
